@@ -5,8 +5,8 @@
 #include"../lib/EGcolor.h"
 using namespace std;
 
-const int CEDULA = 1719529438;
-const string EGNOMBRE_COMPLETO = "Esteban David Gómez Rocha";
+const int egCEDULA = 1719529438;
+const string egNOMBRE_COMPLETO = "Esteban David Gomez Rocha";
 
 struct egCoordenada
 {
@@ -60,24 +60,102 @@ void egleerCoordenadas()
         string egGeo, egDet;
         if (!(ss >> egCap >> egGeo >> egDet))
         {
-            cout << "\033[31mError: La egLinea " << egContador + 1 << " no es una coordenada\033[0m" << endl;
+            continue;
         }
         else
         {
             egCoordenada *egNuevaCoordenada = egCrearCoordenada(egCap, egGeo, egDet);
             egRaiz = egInsertarCoordenada(egRaiz, egNuevaCoordenada);
             egCapacidadTotal += egCap;
-            cout << "\033[32m" << egLinea << "\033[0m" << endl;
+            egContador++;
         }
-        egContador++;
     }
     cout << "Capacidad total: " << egCapacidadTotal << endl;
     cout << "Cantidad de coordenadas: " << egContador << endl;
     egArchivo.close();
 }
 
+void egmostrarInformacion(egCoordenada *egRaiz)
+{
+    int egCapacidadTotal = 0;
+    egCalcularCapacidadTotal(egRaiz, &egCapacidadTotal);
+    cout << "Developer-Nombre: " << egNOMBRE_COMPLETO << endl;
+    cout << "Developer-Cedula: " << egCEDULA << endl;
+    cout << "Capacidad Bélica: " << egCapacidadTotal << endl;
+
+    // Mostrar información de las coordenadas
+    int egCantidadCoordenadas = 0;
+    egCoordenada *egCoordenadas[Max_Coordenada];
+    egSecuenciaCargaCoordenadas(egRaiz, egCoordenadas, &egCantidadCoordenadas);
+    cout << "Coordenada-Total: " << egCantidadCoordenadas << endl;
+
+    int egSumaSecuencia = 0;
+    for (int i = 0; i < egCantidadCoordenadas; i++)
+    {
+        cout << "Coordenada-SecCarga[" << i << "]: " << egCoordenadas[i]->egCapacidadBelica << endl;
+        egSumaSecuencia += egCoordenadas[i]->egCapacidadBelica;
+    }
+
+    if (egSumaSecuencia == egCapacidadTotal)
+    {
+        cout << "La suma de la secuencia de carga es igual a la capacidad total." << endl;
+    }
+    else
+    {
+        cout << "Error: La suma de la secuencia de carga no es igual a la capacidad total." << endl;
+    }
+}
+
+void egCalcularCapacidadTotal(egCoordenada *egRaiz, int *egCapacidadTotal)
+{
+    if (egRaiz != NULL)
+    {
+        *egCapacidadTotal += egRaiz->egCapacidadBelica;
+        egCalcularCapacidadTotal(egRaiz->egIzquierda, egCapacidadTotal);
+        egCalcularCapacidadTotal(egRaiz->egDerecha, egCapacidadTotal);
+    }
+}
+void egSecuenciaCargaCoordenadas(egCoordenada *egRaiz, egCoordenada *egCoordenadas[], int *egCantidadCoordenadas)
+{
+    if (egRaiz != NULL)
+    {
+        bool egCoordenadaRepetida = false;
+        for (int i = 0; i < *egCantidadCoordenadas; i++)
+        {
+            if (egRaiz == egCoordenadas[i])
+            {
+                egCoordenadaRepetida = true;
+                break;
+            }
+        }
+
+        if (!egCoordenadaRepetida)
+        {
+            egCoordenadas[*egCantidadCoordenadas] = egRaiz; 
+            (*egCantidadCoordenadas)++;                     
+        }
+
+        egSecuenciaCargaCoordenadas(egRaiz->egIzquierda, egCoordenadas, egCantidadCoordenadas);
+        egSecuenciaCargaCoordenadas(egRaiz->egDerecha, egCoordenadas, egCantidadCoordenadas);
+    }
+}
+
 int main()
 {
-    egleerCoordenadas();
-    return 0;
+    int egCedulaAutorizada;
+        string egNombreCompletoAutorizado;
+        cout << "Ingrese su cédula: ";
+        cin >> egCedulaAutorizada;
+        cout << "Ingrese su nombre completo: ";
+        cin.ignore();
+        getline(cin, egNombreCompletoAutorizado);
+        if (egCedulaAutorizada == egCEDULA && egNombreCompletoAutorizado == egNOMBRE_COMPLETO)
+        {
+            egleerCoordenadas();
+        }
+        else
+        {
+            cout << "No está autorizado para ejecutar este programa." << endl;
+        }
+        return 0;
 }
